@@ -46,7 +46,7 @@ public class ScaleableDialog extends Dialog {
     // 双指缩放手势检测器
     private ScaleGestureDetector mScaleGestureDetector;
     // Dialog 窗口的布局参数，控制窗口位置、大小等
-    private WindowManager.LayoutParams mWinParam;
+    private WindowManager.LayoutParams mWindowParam;
 
     // 标题栏拖拽：手指按下时的窗口位置
     private int mMoveDownX, mMoveDownY, mMoveX, mMoveY;
@@ -84,19 +84,19 @@ public class ScaleableDialog extends Dialog {
             // 设置窗口背景透明，让自定义布局的背景显示出来
             window.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
             // 获取当前窗口属性并复制一份，避免直接修改系统默认属性
-            mWinParam = window.getAttributes();
-            mWinParam.copyFrom(window.getAttributes());
+            mWindowParam = new WindowManager.LayoutParams();
+            mWindowParam.copyFrom(window.getAttributes());
             // 设置像素格式为 RGBA_8888，支持透明通道
-            mWinParam.format = PixelFormat.RGBA_8888;
+            mWindowParam.format = PixelFormat.RGBA_8888;
             // 设置窗口初始宽高
-            mWinParam.width = mDefaultWidth;
-            mWinParam.height = mDefaultHeight;
+            mWindowParam.width = mDefaultWidth;
+            mWindowParam.height = mDefaultHeight;
             // 设置窗口对齐方式为左上角对齐（配合 x/y 坐标定位）
-            mWinParam.gravity = Gravity.START | Gravity.TOP;
+            mWindowParam.gravity = Gravity.START | Gravity.TOP;
             // 将窗口居中显示在屏幕上
             centerWindow();
             // 应用窗口属性
-            window.setAttributes(mWinParam);
+            window.setAttributes(mWindowParam);
         }
 
         // 获取根布局，这是 View 层级缩放的核心对象
@@ -157,16 +157,16 @@ public class ScaleableDialog extends Dialog {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // 记录手指按下时的窗口位置
-                    mMoveX = mWinParam.x;
-                    mMoveY = mWinParam.y;
+                    mMoveX = mWindowParam.x;
+                    mMoveY = mWindowParam.y;
                     // 记录手指按下时的坐标
                     mMoveDownX = x;
                     mMoveDownY = y;
                     break;
                 case MotionEvent.ACTION_MOVE:
                     // 计算新的窗口位置：原位置 + 手指移动距离
-                    mWinParam.x = mMoveX + (x - mMoveDownX);
-                    mWinParam.y = mMoveY + (y - mMoveDownY);
+                    mWindowParam.x = mMoveX + (x - mMoveDownX);
+                    mWindowParam.y = mMoveY + (y - mMoveDownY);
                     // 确保窗口不超出屏幕边界
                     ensureWindowInScreen();
                     // 更新窗口布局
@@ -195,8 +195,8 @@ public class ScaleableDialog extends Dialog {
                     mResizeDownX = x;
                     mResizeDownY = y;
                     // 记录手指按下时的窗口宽高（作为缩放基准）
-                    mResizeStartWidth = mWinParam.width;
-                    mResizeStartHeight = mWinParam.height;
+                    mResizeStartWidth = mWindowParam.width;
+                    mResizeStartHeight = mWindowParam.height;
                     break;
                 case MotionEvent.ACTION_MOVE:
                     // 计算手指在 X 和 Y 方向的移动距离
@@ -231,8 +231,8 @@ public class ScaleableDialog extends Dialog {
         // 同步 View 层级缩放（关键：让所有子控件按比例缩放）
         syncRootScale();
         // 同步 Window 层级尺寸缩放（关键：让触摸事件区域与视觉大小一致）
-        mWinParam.width = (int) (mDefaultWidth * mScaleFactor);
-        mWinParam.height = (int) (mDefaultHeight * mScaleFactor);
+        mWindowParam.width = (int) (mDefaultWidth * mScaleFactor);
+        mWindowParam.height = (int) (mDefaultHeight * mScaleFactor);
         // 确保缩放后窗口不超出屏幕
         ensureWindowInScreen();
         // 刷新布局使更改生效
@@ -268,9 +268,9 @@ public class ScaleableDialog extends Dialog {
         // 获取屏幕宽高
         int screenWidth = getContext().getResources().getDisplayMetrics().widthPixels;
         int screenHeight = getContext().getResources().getDisplayMetrics().heightPixels;
-        // 计算居中坐标：屏幕中心 - 窗口一半宽高
-        mWinParam.x = Math.max(0, (screenWidth - mWinParam.width) / 2);
-        mWinParam.y = Math.max(0, (screenHeight - mWinParam.height) / 2);
+        // 计算居中坐标：屏幕的一半宽高 - 窗口的一半宽高
+        mWindowParam.x = Math.max(0, (screenWidth - mWindowParam.width) / 2);
+        mWindowParam.y = Math.max(0, (screenHeight - mWindowParam.height) / 2);
     }
 
     /**
@@ -282,17 +282,17 @@ public class ScaleableDialog extends Dialog {
         int screenWidth = getContext().getResources().getDisplayMetrics().widthPixels;
         int screenHeight = getContext().getResources().getDisplayMetrics().heightPixels;
         // 如果窗口右边缘超出屏幕，将其拉回
-        if (mWinParam.x + mWinParam.width > screenWidth) {
-            mWinParam.x = screenWidth - mWinParam.width;
+        if (mWindowParam.x + mWindowParam.width > screenWidth) {
+            mWindowParam.x = screenWidth - mWindowParam.width;
         }
         // 如果窗口底边缘超出屏幕，将其拉回
-        if (mWinParam.y + mWinParam.height > screenHeight) {
-            mWinParam.y = screenHeight - mWinParam.height;
+        if (mWindowParam.y + mWindowParam.height > screenHeight) {
+            mWindowParam.y = screenHeight - mWindowParam.height;
         }
         // 如果窗口左边缘超出屏幕（x < 0），将其设为 0
-        if (mWinParam.x < 0) mWinParam.x = 0;
+        if (mWindowParam.x < 0) mWindowParam.x = 0;
         // 如果窗口上边缘超出屏幕（y < 0），将其设为 0
-        if (mWinParam.y < 0) mWinParam.y = 0;
+        if (mWindowParam.y < 0) mWindowParam.y = 0;
     }
 
     /**
@@ -303,7 +303,7 @@ public class ScaleableDialog extends Dialog {
         Window window = getWindow();
         if (window == null) return;
         // 应用最新的窗口属性
-        window.setAttributes(mWinParam);
+        window.setAttributes(mWindowParam);
         // 获取 DecorView 并强制刷新布局
         View decorView = window.getDecorView();
         if (decorView != null) {
