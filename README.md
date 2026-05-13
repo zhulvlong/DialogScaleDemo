@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-本项目是一个独立的 Android Demo 工程，演示如何实现一个 **可自由缩放、拖拽移动的 Dialog 窗口**。该 Demo 从白板项目的 `SubjectDialog` 中抽取核心缩放机制，去除所有业务逻辑，专注于展示 Android 中 Dialog 窗口缩放的技术实现。
+本项目是一个独立的 Android Demo 工程，演示如何实现一个 **可自由缩放、拖拽移动的 Dialog 窗口**。该 Demo专注于展示 Android 中 Dialog 窗口缩放的技术实现。
 
 ## 功能特性
 
@@ -246,4 +246,4 @@ if (Math.abs(scale - mScaleFactor) < 0.001f) {
 
 ## 来源
 
-本 Demo 的技术实现抽取自白板项目的 `SubjectDialog`，去除了所有业务逻辑（学科数据、RecyclerView、WebView、Glide 等），仅保留缩放相关的核心机制，用于学习和演示 Android Dialog 窗口缩放技术。
+本 Demo 的技术用于学习和演示 Android Dialog 窗口缩放技术。
